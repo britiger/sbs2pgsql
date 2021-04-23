@@ -16,16 +16,20 @@ Setup
 - Setup database using sample `create_db.sql`
 - If use other configuration set related variable in your terminal: 
 ```bash
+# Database Parameter
+export SBS_DB_HOST=127.0.0.1
+export SBS_DB_PORT=5432
+export SBS_DB_DATABASE=sbs
+export SBS_DB_USER=sbs
+export SBS_DB_PASSWORD=sbs
+# BaseStation Connection
 export SBS_HOST=127.0.0.1
-export SBS_PORT=5432
-export SBS_DATABASE=sbs
-export SBS_USER=sbs
-export SBS_PASSWORD=sbs
+export SBS_HOST=30003
 ```
 
 Start
 -----
 
 ```
-nc 127.0.0.1 30003 |  python3 sbs2pgsql.py
+python3 sbs2pgsql.py
 ```
