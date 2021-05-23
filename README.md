@@ -33,3 +33,9 @@ Start
 ```
 python3 sbs2pgsql.py
 ```
+
+To sum the single messages you can call `process_flights.sql` to process flights older than 1 hour and create a line per flight in table `processedFlights`:
+```
+export PGPASSWORD=sbs
+psql -h 127.0.0.1 -U sbs -f process_flights.sql
+```
