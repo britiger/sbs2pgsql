@@ -93,3 +93,13 @@ WITH mess AS
 SELECT *
     FROM alldiff
     WHERE period = 1;
+
+CREATE TABLE Aircrafts (
+    HexIdent varchar(6) NOT NULL,
+    Registration varchar(25),
+    IcaoType varchar(4),
+    IcaoOperator varchar(4),
+    SourceFile TEXT
+
+);
+CREATE UNIQUE INDEX airc_idx_hex ON Aircrafts (HexIdent);
