@@ -47,11 +47,20 @@ class SBSConnection:
                 except socket.timeout:
                     continue
 
+                except KeyboardInterrupt:
+                    print('Closing ...')
+                    exit(0)
+
                 except:
                     print ('Other Socket err, exit and try creating socket again')
                     self.reconnect()
                     break
-            self.buff += req
+            try:
+                self.buff += req
+            except TypeError:
+                print('Unable to process input')
+                self.reconnect()
+                break
  
         pos = self.buff.find(data)
         rval = self.buff[:pos + len(data)]

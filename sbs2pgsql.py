@@ -13,12 +13,16 @@ except:
 connection = SBSConnection(ip=os.getenv('SBS_HOST', '127.0.0.1'), port=os.getenv('SBS_PORT', '30003'))
 
 cur = db.cursor()
-
+cnt_parsed = 0
 while True:
     line = connection.read_line()
     parsed = sbs1_parse(line)
     if parsed:
+        cnt_parsed += 1
         query = "INSERT INTO messages (MessageType, TransmissionType, SessionID, AircraftID, HexIdent, FlightID, MessageGenerated, MessageLogged, Callsign, Altitude, GroundSpeed, Track, Latitude, Longitude, VerticalRate, Squawk, Alert, Emergency, SPI, OnGround) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
         data = (parsed['messageType'], parsed['transmissionType'], parsed['sessionID'], parsed['aircraftID'], parsed['icao24'], parsed['flightID'], parsed['generatedDate'], parsed['loggedDate'], parsed['callsign'], parsed['altitude'], parsed['groundSpeed'], parsed['track'], parsed['lat'], parsed['lon'], parsed['verticalRate'], parsed['squawk'], parsed['alert'], parsed['emergency'], parsed['spi'], parsed['onGround'])
         cur.execute(query, data)
         db.commit()
+
+        if (cnt_parsed % 1000) == 0:
+            print('Messages parsed: ' + str(cnt_parsed))
