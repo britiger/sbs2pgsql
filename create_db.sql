@@ -9,7 +9,7 @@ CREATE EXTENSION "uuid-ossp";
 SET SESSION ROLE sbs;
 
 CREATE TABLE messages (
-    MessageType varchar(3),
+    MessageType varchar(4),
     TransmissionType smallint,
     SessionID smallint,
     AircraftID smallint,
@@ -29,7 +29,7 @@ CREATE TABLE messages (
     Emergency boolean,
     SPI boolean,
     OnGround boolean,
-    AddedToDB timestamp DEFAULT NOW(),
+    AddedToDB timestamp with time zone DEFAULT NOW(),
     FlightUUID uuid DEFAULT NULL,
     Position geometry GENERATED ALWAYS AS (ST_SetSRID(ST_MakePoint(Longitude, Latitude),4326)) STORED
 );
@@ -48,8 +48,8 @@ CREATE TABLE processedFlights (
     FlightUUID uuid DEFAULT uuid_generate_v4(),
     HexIdent varchar(6),
     Callsign varchar(8),
-    flightFromDate timestamp,
-    flightToDate timestamp,
+    flightFromDate timestamp with time zone,
+    flightToDate timestamp with time zone,
     minAltitude integer,
     geom geometry
 );

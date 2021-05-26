@@ -64,13 +64,16 @@ def parse(msg: str) -> Dict[str, Union[str, int, float, bool, datetime]]:
     try:
 #            logging.debug("%s   %s   %s" % (parts[1], parts[4], ",".join(parts[10:])))
         sbs1["messageType"] = __parseString(parts, 0)
-        if sbs1["messageType"] != "MSG":
+        if sbs1["messageType"] != "MSG" and sbs1["messageType"] != "MLAT":
             return None
         sbs1["transmissionType"] = __parseInt(parts, 1)
         sbs1["sessionID"] = __parseString(parts, 2)
         sbs1["aircraftID"] = __parseString(parts, 3)
         sbs1["icao24"] = __parseString(parts, 4)
-        sbs1["flightID"] = __parseString(parts, 5)
+        if sbs1["messageType"] != "MLAT":
+            sbs1["flightID"] = __parseString(parts, 5)
+        else:
+            sbs1["flightID"] = None
         sbs1["generatedDate"] = __parseDateTime(parts, 6, 7)
         sbs1["loggedDate"] = __parseDateTime(parts, 8, 9)
         sbs1["callsign"] = __parseString(parts, 10)
