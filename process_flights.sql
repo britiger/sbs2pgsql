@@ -1,3 +1,10 @@
+-- Clean Database
+WITH caList AS (SELECT hexident, count(position) as cp, count(*) ca, count(callsign) cc
+FROM messages
+GROUP BY hexident
+HAVING count(position)=0 AND count(callsign)=0 AND count(*)=1)
+DELETE FROM messages WHERE messages.hexident IN (SELECT hexident FROM caList);
+--
 BEGIN;
 WITH 
 summ AS
