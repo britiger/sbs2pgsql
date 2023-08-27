@@ -1,0 +1,2 @@
+WITH newhex AS (SELECT hexident, max(flighttodate) AS lastseen, max(flightfromdate) AS firstseen, count(*) cnt FROM process2 GROUP BY hexident ORDER BY min(flightfromdate) DESC LIMIT 50)
+SELECT u.hexident, registration, manufacturerandmodel, is_military(hexident), COALESCE(lastseen,firstseen) AS lastseen, cnt FROM newhex u LEFT JOIN aircrafts a ON u.hexident=a.icao ORDER BY lastseen DESC;

@@ -305,7 +305,7 @@ class ADSBClient(TcpClient):
                 self.check_old()
 
 # run new client, change the host, port, and rawtype if needed
-client = ADSBClient(host=os.getenv('SBS_HOST', '127.0.0.1'), port=30005, rawtype='beast')
+client = ADSBClient(host=os.getenv('SBS_HOST', '127.0.0.1'), port=os.getenv('SBS_PORT', '30005'), rawtype='beast')
 
 def signal_handler(sig, frame):
     client.stop()
