@@ -1,5 +1,6 @@
 import signal
 import math
+import json
 import sys
 import os
 import psycopg2 as dbaccess
@@ -62,27 +63,30 @@ class ADSBClient(TcpClient):
         self.insert_stat()
 
     def insert_db(self, icao, initial=False):
-        if self.active_dict[icao]['msgCnt'] < 2:
+        if (self.active_dict[icao]['msgCnt'] < 5 and self.active_dict[icao]['callsign'] is None and not self.active_dict[icao]['crc']) or self.active_dict[icao]['msgCnt'] < 2:
             print ("Skip " + icao + " low messages")
             self.stat_skip += 1
             return
 
         linestring = None
         callsign = None
+        squwaks = None
         if len(self.active_dict[icao]['positions']) > 1:
             linestring = "SRID=4326;LINESTRING Z (" + ", ".join(self.active_dict[icao]['positions']) + ")"
         if self.active_dict[icao]['callsign']:
             callsign = self.active_dict[icao]['callsign'].strip('_')
+        if len(self.active_dict[icao]['squawks']):
+            squwaks = json.dumps(self.active_dict[icao]['squawks'])
 
         # Don't add last seen if not final insert
         todate = self.active_dict[icao]['lastProcess'] if not initial else None
 
-        query = "INSERT INTO process2 (hexident, callsign, flightfromdate, flighttodate, geom, msg, crc, category) VALUES (%s, %s, %s, %s, %s, %s, %s,%s) ON conflict (hexident, flightfromdate) DO UPDATE SET callsign=EXCLUDED.callsign, flighttodate=EXCLUDED.flighttodate, geom=EXCLUDED.geom, msg=EXCLUDED.msg, crc=EXCLUDED.crc, category=EXCLUDED.category RETURNING flightuuid"
-        data = (self.active_dict[icao]['icao'],callsign,self.active_dict[icao]['firstSeen'],todate, linestring ,self.active_dict[icao]['msgCnt'],self.active_dict[icao]['crc'],self.active_dict[icao]['category'])
+        query = "INSERT INTO process2 (hexident, callsign, flightfromdate, flighttodate, geom, msg, squawks, crc, category) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s) ON conflict (hexident, flightfromdate) DO UPDATE SET callsign=EXCLUDED.callsign, flighttodate=EXCLUDED.flighttodate, geom=EXCLUDED.geom, msg=EXCLUDED.msg, squawks=EXCLUDED.squawks, crc=EXCLUDED.crc, category=EXCLUDED.category RETURNING flightuuid"
+        data = (self.active_dict[icao]['icao'],callsign,self.active_dict[icao]['firstSeen'],todate, linestring ,self.active_dict[icao]['msgCnt'], squwaks, self.active_dict[icao]['crc'],self.active_dict[icao]['category'])
         try:
             self.cur.execute(query, data)
             self.db.commit()
-            if initial:                
+            if initial:
                 self.active_dict[icao]['flightuuid'] = self.cur.fetchone()[0]
             else:
                 self.stat_saved += 1
@@ -170,17 +174,21 @@ class ADSBClient(TcpClient):
             crc = pms.crc(msg)
             # print (str(crc))
 
-            if icao == None:
+            if icao == None or icao == '000000':
                 print ("icao was empty.")
                 continue
+
+            callsign = None
+            category = None
+
+            if tc == None:                
+                # set to 0 for compare in next steps
+                tc = 0
 
             if 1 <= tc <= 4:
                 callsign = pms.adsb.callsign(msg)
                 cat = pms.adsb.category(msg)
                 category = self.get_category(tc, cat)
-            else:
-                callsign = None
-                category = None
 
             if df == 5 or df == 21:
                 try:
@@ -201,6 +209,8 @@ class ADSBClient(TcpClient):
                         self.active_dict[icao]['callsign'] =  callsign
                     if category:
                         self.active_dict[icao]['category'] =  category
+                    if squawk:
+                        self.active_dict[icao]['squawks'][squawk] = self.active_dict[icao]['squawks'].get(squawk, 0) + 1
                     is_new = False
 
                     if 5 <= tc <= 18 and crc == 0:
@@ -280,6 +290,7 @@ class ADSBClient(TcpClient):
                     "msgCnt": 1,
                     "callsign": callsign,
                     "positions": [],
+                    "squawks": {},
                     "t0": 0,
                     "m0": None,
                     "t1": 0,
@@ -291,7 +302,7 @@ class ADSBClient(TcpClient):
                     "category": category
                 }
                 self.active_dict[icao] = ac
-                print ("New " + str(df) + " " + str(tc) + " " + icao)
+                print ("New DF: " + str(df) + " TC: " + str(tc) + " ICAO: " + icao)
 
             if crc == 0:
                 self.active_dict[icao]["crc"] = True

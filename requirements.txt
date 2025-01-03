@@ -1,4 +1,9 @@
+flask
+flask-sqlalchemy
+flask-babel
 psycopg2
 pytz
-dateutil
+python-dateutil
 pymodes
+bs4
+requests

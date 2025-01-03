@@ -1,0 +1,12 @@
+export PGHOST=127.0.0.1
+export PGPASSWORD=sbs
+export PGUSER=sbs
+export PGDATABASE=sbs
+export PGPORT=5432
+
+export SBS_DB_PORT=$PGPORT
+export SBS_DB_HOST=$PGHOST
+export SBS_DB_DATABASE=$PGDATABASE
+
+export SBS_HOST=127.0.0.1
+export SBS_PORT=30005

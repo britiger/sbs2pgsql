@@ -29,14 +29,14 @@ class sdm_import:
     def make_empty_null(self, array):
         return [v if v != '' else None for v in array]
 
-    def insert_sdm_airport(self, entry):
+    def insert_sdm_airline(self, entry):
         query = 'INSERT INTO sdm_airlines (code, name, icao, iata, PositioningFlightPattern, CharterFlightPattern) VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name, iata = EXCLUDED.iata, icao = EXCLUDED.icao, PositioningFlightPattern=EXCLUDED.PositioningFlightPattern, CharterFlightPattern=EXCLUDED.CharterFlightPattern'
         data = (entry[0],entry[1],entry[2],entry[3],entry[4],entry[5])
         try:
             self.cur.execute(query, data)
             self.db.commit()
         except Exception as e:
-            print('Failed to add airport: '+ str(e))
+            print('Failed to add airline: '+ str(e))
             self.db.rollback()
 
     def insert_sdm_codeblock(self, entry):
@@ -77,15 +77,15 @@ class sdm_import:
 
         self.cur.execute(query, data)
 
-    def read_sdm_airports(self):
-        airport_file=SDM_ROOT_DIR+'airlines/schema-01/airlines.csv'
+    def read_sdm_airlines(self):
+        airline_file=SDM_ROOT_DIR+'airlines/schema-01/airlines.csv'
 
-        with open(airport_file, 'r', newline='') as infile:
+        with open(airline_file, 'r', newline='') as infile:
             reader = csv.reader(infile)
             next(reader, None) 
             for r in reader:
                 if len(r[0]) == 3:
-                    self.insert_sdm_airport(self.make_empty_null(r))
+                    self.insert_sdm_airline(self.make_empty_null(r))
 
     def read_sdm_aircrafts(self):
         aircraft_dir=SDM_ROOT_DIR+'aircraft/schema-01/'
@@ -194,6 +194,7 @@ class sdm_import:
                 self.db.rollback()
 
 import_sdm = sdm_import()
+import_sdm.read_sdm_airlines()
 import_sdm.read_sdm_airports()
 import_sdm.read_sdm_codeblocks()
 import_sdm.read_sdm_countries()

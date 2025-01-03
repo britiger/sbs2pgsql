@@ -127,14 +127,14 @@ ORDER BY ?item ?itemLabel ?icao ?iata ?callsign ?countryCode ?inactive ?logo ?we
         for item in data['results']['bindings']:
             wikidata = item['item']['value'].split('/')[-1]
 
+            if len(i) > 1 and i['wikidata'] != wikidata:
+                self.insert_airline(i)
+                i = {}
+
             if 'inactive' in item:
                 self.delete_airline(wikidata)
                 i = {}
                 continue
-
-            if len(i) > 1 and i['wikidata'] != wikidata:
-                self.insert_airline(i)
-                i = {}
 
             i['wikidata'] = wikidata
             i['name'] = item['itemLabel']['value'] if 'xml:lang' in item['itemLabel'] else None
