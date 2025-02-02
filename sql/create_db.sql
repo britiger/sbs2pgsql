@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS process2 (
     flightFromDate timestamp with time zone,
     flightToDate timestamp with time zone,
     msg int,
+    squawks jsonb,
     category char(2),
     crc boolean,
     geom geometry(LineStringZ, 4326),
@@ -23,6 +24,21 @@ CREATE TABLE IF NOT EXISTS process2 (
 CREATE INDEX IF NOT EXISTS pro2_idx_hex ON process2 (HexIdent);
 CREATE UNIQUE INDEX IF NOT EXISTS pro2_uniq ON process2 (HexIdent, flightFromDate);
 CREATE INDEX IF NOT EXISTS pro2_idx_date ON process2 (flightFromDate,flightToDate);
+CREATE INDEX IF NOT EXISTS pro2_idx_callsign ON process2 (callsign);
+CREATE INDEX IF NOT EXISTS pro2_idx_callsign_icao ON process2 (substring(callsign::text, 1, 3));
+
+CREATE OR REPLACE VIEW process2alt AS
+    SELECT flightuuid,
+        hexident,
+        callsign,
+        flightfromdate,
+        flighttodate,
+        msg,
+        geom,
+        st_z(st_startpoint(geom)) AS startalt,
+        st_z(st_endpoint(geom)) AS endalt,
+        st_zmin(geom) AS minalt
+   FROM process2;
 
 CREATE TABLE IF NOT EXISTS stats
 (
