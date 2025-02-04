@@ -11,7 +11,7 @@ CREATE OR REPLACE VIEW view_eddb_night_flights AS
     WHERE minalt < 3500 AND
         (
             (flightfromdate AT TIME ZONE 'Europe/Berlin')::time > '22:00' OR
-            (flighttodate AT TIME ZONE 'Europe/Berlin')::time < '5:00'
+            (flighttodate AT TIME ZONE 'Europe/Berlin')::time < '6:00'
         );
 
 CREATE OR REPLACE FUNCTION eddb_timeslot(flighttime time) RETURNS varchar(15)
@@ -26,7 +26,7 @@ BEGIN
   -- Verspätet/Verfüht
   ELSIF flighttime > '23:30' THEN
     RETURN 'delayed';
-  ELSIF flighttime > '05:00' AND flighttime > '05:30' THEN
+  ELSIF flighttime > '05:00' AND flighttime < '05:30' THEN
     RETURN 'early';
   -- Absolutes Verbot
   ELSIF flighttime < '05:00' THEN
